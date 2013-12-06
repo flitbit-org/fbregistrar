@@ -20,11 +20,11 @@ namespace FlitBit.Registrar.Tests
 
 			var registrationEventCalled = false;
 			var registrar = new Registrar<string, string>();
-			registrar.OnNewRegistration += new EventHandler<RegistrationEventArgs<string, string>>((sender, args) =>
-				{
-					registrationEventCalled = true;
-					capture = args.Key;
-				});
+			registrar.OnNewRegistration += (sender, args) =>
+			{
+			  registrationEventCalled = true;
+			  capture = args.Key;
+			};
 
 			Assert.IsFalse(registrar.IsRegistered(test.Key));
 			Assert.IsFalse(registrar.TryGetRegistration(test.Key, out reg));
@@ -66,11 +66,11 @@ namespace FlitBit.Registrar.Tests
 
 			var registrationEventCalled = 0;
 			var registrar = new Registrar<string, string>();
-			registrar.OnNewRegistration += new EventHandler<RegistrationEventArgs<string, string>>((sender, args) =>
+			registrar.OnNewRegistration += (sender, args) =>
 			{
-				registrationEventCalled += 1;
-				capture = args.Key;
-			});
+			  registrationEventCalled += 1;
+			  capture = args.Key;
+			};
 
 			Assert.IsFalse(registrar.IsRegistered(test.Key));
 			Assert.IsFalse(registrar.TryGetRegistration(test.Key, out reg));
@@ -102,11 +102,11 @@ namespace FlitBit.Registrar.Tests
 
 			var registrationEventCalled = 0;
 			var registrar = new Registrar<string, string>();
-			registrar.OnNewRegistration += new EventHandler<RegistrationEventArgs<string, string>>((sender, args) =>
+			registrar.OnNewRegistration += (sender, args) =>
 			{
-				registrationEventCalled += 1;
-				capture = args.Key;
-			});
+			  registrationEventCalled += 1;
+			  capture = args.Key;
+			};
 
 			Assert.IsFalse(registrar.IsRegistered(test.Key));
 			Assert.IsFalse(registrar.TryGetRegistration(test.Key, out reg));
@@ -115,11 +115,8 @@ namespace FlitBit.Registrar.Tests
 			Assert.AreEqual(1, registrationEventCalled);
 			Assert.AreSame(reg, capture);
 
-			List<RegistrationEventKind> notificationKinds = new List<RegistrationEventKind>();
-			reg.OnAny += new EventHandler<RegistrationEventArgs<string, string>>((sender, args) =>
-			{
-				notificationKinds.Add(args.Kind);
-			});
+			var notificationKinds = new List<RegistrationEventKind>();
+			reg.OnAny += (sender, args) => notificationKinds.Add(args.Kind);
 
 			Assert.IsTrue(registrar.TryGetRegistration(test.Key, out second));
 
@@ -146,11 +143,11 @@ namespace FlitBit.Registrar.Tests
 
 			var registrationEventCalled = 0;
 			var registrar = new Registrar<string, string>();
-			registrar.OnNewRegistration += new EventHandler<RegistrationEventArgs<string, string>>((sender, args) =>
+			registrar.OnNewRegistration += (sender, args) =>
 			{
-				registrationEventCalled += 1;
-				capture = args.Key;
-			});
+			  registrationEventCalled += 1;
+			  capture = args.Key;
+			};
 
 			Assert.IsFalse(registrar.IsRegistered(test.Key));
 			Assert.IsFalse(registrar.TryGetRegistration(test.Key, out reg));
@@ -159,17 +156,17 @@ namespace FlitBit.Registrar.Tests
 			Assert.AreEqual(1, registrationEventCalled);
 			Assert.AreSame(reg, capture);
 
-			List<RegistrationEventKind> notificationKinds = new List<RegistrationEventKind>();
-			reg.OnAny += new EventHandler<RegistrationEventArgs<string, string>>((sender, args) =>
+			var notificationKinds = new List<RegistrationEventKind>();
+			reg.OnAny += (sender, args) =>
 			{
-				notificationKinds.Add(args.Kind);
-				if (args.Kind == RegistrationEventKind.Replacing)
-				{
-					Assert.IsTrue(args.CanCancel);
-					args.Cancel();
-					Assert.IsTrue(args.IsCanceled);
-				}
-			});
+			  notificationKinds.Add(args.Kind);
+			  if (args.Kind == RegistrationEventKind.Replacing)
+			  {
+			    Assert.IsTrue(args.CanCancel);
+			    args.Cancel();
+			    Assert.IsTrue(args.IsCanceled);
+			  }
+			};
 
 			Assert.IsTrue(registrar.TryGetRegistration(test.Key, out second));
 

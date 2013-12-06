@@ -6,11 +6,11 @@
     <title>$title$</title>
     <authors>Phillip Clark</authors>
     <owners>flitbit.org</owners>
-    <licenseUrl>http://fbreg.codeplex.com/license</licenseUrl>
-    <projectUrl>http://fbreg.codeplex.com/</projectUrl>
+    <licenseUrl>https://raw.github.com/flitbit-org/fbregistrar/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/flitbit-org/fbregistrar</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Published to CodePlex and packaged for NuGet.</releaseNotes>
+    <releaseNotes>Moved repository to github.</releaseNotes>
     <copyright>Copyright 2013</copyright>
   </metadata>
 </package>
