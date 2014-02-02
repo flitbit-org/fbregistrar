@@ -8,18 +8,18 @@ namespace FlitBit.Registrar
 	/// <summary>
 	/// Basic implementation of the registrar.
 	/// </summary>
-	/// <typeparam name="K">key type K</typeparam>
-	/// <typeparam name="H">handback type H</typeparam>
-	public class Registrar<K, H> : IRegistrar<K, H>
+	/// <typeparam name="TKey">key type K</typeparam>
+	/// <typeparam name="THandback">handback type H</typeparam>
+	public class Registrar<TKey, THandback> : IRegistrar<TKey, THandback>
 	{
-		Object _sync = new Object();
-		Dictionary<K, IRegistrationKey> _registrations = new Dictionary<K, IRegistrationKey>();
+	  readonly Object _sync = new Object();
+	  readonly Dictionary<TKey, IRegistrationKey> _registrations = new Dictionary<TKey, IRegistrationKey>();
 		int _revision = 0;
 
 		[Serializable]
-		class RegistrationKey : IRegistrationKey<K, H>
+		class RegistrationKey : IRegistrationKey<TKey, THandback>
 		{
-			internal RegistrationKey(IRegistrar<K, H> registrar, K key, H handback)
+			internal RegistrationKey(IRegistrar<TKey, THandback> registrar, TKey key, THandback handback)
 			{
 				this.Registrar = registrar;
 				this.Key = key;
@@ -28,11 +28,11 @@ namespace FlitBit.Registrar
 
 			public bool IsCanceled { get; private set; }
 
-			public IRegistrar<K, H> Registrar { get; private set; }
+			public IRegistrar<TKey, THandback> Registrar { get; private set; }
 
-			public K Key { get; private set; }
+			public TKey Key { get; private set; }
 
-			public H Handback { get; private set; }
+			public THandback Handback { get; private set; }
 
 			public void Cancel()
 			{									
@@ -43,9 +43,9 @@ namespace FlitBit.Registrar
 				}
 			}
 
-			public Type KeyType { get { return typeof(K); } }
+			public Type KeyType { get { return typeof(TKey); } }
 
-			public Type HandbackType { get { return typeof(H); } }
+			public Type HandbackType { get { return typeof(THandback); } }
 
 			public IRegistrar UntypedRegistrar
 			{
@@ -60,9 +60,9 @@ namespace FlitBit.Registrar
 
 			public object UntypedHandback { get { return Handback; } }
 
-			public event EventHandler<RegistrationEventArgs<K, H>> OnAny;
+			public event EventHandler<RegistrationEventArgs<TKey, THandback>> OnAny;
 
-			internal void NotifyRegistrationEvent(RegistrationEventArgs<K, H> e)
+			internal void NotifyRegistrationEvent(RegistrationEventArgs<TKey, THandback> e)
 			{
 				if (OnAny != null)
 				{
@@ -76,7 +76,7 @@ namespace FlitBit.Registrar
 		/// </summary>
 		/// <param name="key">the key</param>
 		/// <returns><em>true</em> if the registration is present; otherwise <em>false</em></returns>
-		public bool IsRegistered(K key)
+		public bool IsRegistered(TKey key)
 		{
 			lock (_sync)
 			{
@@ -91,17 +91,17 @@ namespace FlitBit.Registrar
 		/// <param name="registration">reference to a variable where the registration
 		/// will be returned upon success.</param>
 		/// <returns><em>true</em> if the registration is present; otherwise <em>false</em></returns>
-		public bool TryGetRegistration(K key, out IRegistrationKey<K, H> registration)
+		public bool TryGetRegistration(TKey key, out IRegistrationKey<TKey, THandback> registration)
 		{
 			lock (_sync)
 			{
 				if (_registrations.ContainsKey(key))
 				{
-					registration = (IRegistrationKey<K, H>)_registrations[key];
+					registration = (IRegistrationKey<TKey, THandback>)_registrations[key];
 					return true;
 				}
 			}
-			registration = default(IRegistrationKey<K, H>);
+			registration = default(IRegistrationKey<TKey, THandback>);
 			return false;
 		}
 
@@ -113,10 +113,10 @@ namespace FlitBit.Registrar
 		/// <param name="registration">reference to a variable where the registration
 		/// will be written upon success.</param>
 		/// <returns><em>true</em> if the registration is successful; otherwise <em>false</em></returns>
-		public bool TryRegister(K key, H handback, out IRegistrationKey<K, H> registration)
+		public bool TryRegister(TKey key, THandback handback, out IRegistrationKey<TKey, THandback> registration)
 		{
 			var result = false;
-			registration = default(IRegistrationKey<K, H>);
+			registration = default(IRegistrationKey<TKey, THandback>);
 
 			lock (_sync)
 			{
@@ -130,7 +130,7 @@ namespace FlitBit.Registrar
 			}
 			if (result)
 			{ // notify registration observers outside the lock...
-				NotifyRegistrationEvent(new RegistrationEventArgs<K, H>(registration, RegistrationEventKind.Registration), null);
+				NotifyRegistrationEvent(new RegistrationEventArgs<TKey, THandback>(registration, RegistrationEventKind.Registration), null);
 			}
 			return result;
 		}
@@ -144,29 +144,29 @@ namespace FlitBit.Registrar
 		/// <param name="registration">reference to a variable where the new
 		/// registration will be returned upon success.</param>
 		/// <returns><em>true</em> if the registration is present; otherwise <em>false</em></returns>
-		public bool TryReplaceRegistration(IRegistrationKey current, K key, H handback, out IRegistrationKey<K, H> registration)
+		public bool TryReplaceRegistration(IRegistrationKey current, TKey key, THandback handback, out IRegistrationKey<TKey, THandback> registration)
 		{
 			var result = false;
-			registration = default(IRegistrationKey<K, H>);
+			registration = default(IRegistrationKey<TKey, THandback>);
 
-			RegistrationKey ours = current as RegistrationKey;
-			if (ours != null && Object.ReferenceEquals(this, ours.Registrar))
+			var ours = current as RegistrationKey;
+			if (ours != null && ReferenceEquals(this, ours.Registrar))
 			{
 				lock (_sync)
 				{
 					if (_registrations.ContainsKey(key))
 					{
 						var it = _registrations[key];
-						if (Object.ReferenceEquals(it, ours))
+						if (ReferenceEquals(it, ours))
 						{
-							var evt = new RegistrationEventArgs<K, H>(ours, RegistrationEventKind.Replacing);
+							var evt = new RegistrationEventArgs<TKey, THandback>(ours, RegistrationEventKind.Replacing);
 							NotifyRegistrationEvent(evt, ours);
 							if (!evt.IsCanceled)
 							{
 								registration = new RegistrationKey(this, key, handback);
 								_registrations[key] = registration;
 								_revision++;
-								NotifyRegistrationEvent(new RegistrationEventArgs<K, H>(ours, RegistrationEventKind.Replaced), ours);
+								NotifyRegistrationEvent(new RegistrationEventArgs<TKey, THandback>(ours, RegistrationEventKind.Replaced), ours);
 								result = true;
 							}
 						}
@@ -175,7 +175,7 @@ namespace FlitBit.Registrar
 			}
 			if (result)
 			{ // notify registration observers outside the lock...
-				NotifyRegistrationEvent(new RegistrationEventArgs<K, H>(registration, RegistrationEventKind.Registration), null);
+				NotifyRegistrationEvent(new RegistrationEventArgs<TKey, THandback>(registration, RegistrationEventKind.Registration), null);
 			}
 			return result;
 		}
@@ -187,8 +187,8 @@ namespace FlitBit.Registrar
 		/// <returns><em>true</em> if the registration was canceled as a result of the call; otherwise <em>false</em>.</returns>
 		public bool CancelRegistration(IRegistrationKey registration)
 		{
-			RegistrationKey ours = registration as RegistrationKey;
-			if (ours != null && Object.ReferenceEquals(this, ours.Registrar))
+			var ours = registration as RegistrationKey;
+			if (ours != null && ReferenceEquals(this, ours.Registrar))
 			{
 				var key = ours.Key;
 				lock (_sync)
@@ -196,15 +196,15 @@ namespace FlitBit.Registrar
 					if (_registrations.ContainsKey(key))
 					{
 						var current = _registrations[key];
-						if (Object.ReferenceEquals(current, registration))
+						if (ReferenceEquals(current, registration))
 						{
-							var evt = new RegistrationEventArgs<K, H>(ours, RegistrationEventKind.Canceling);
+							var evt = new RegistrationEventArgs<TKey, THandback>(ours, RegistrationEventKind.Canceling);
 							NotifyRegistrationEvent(evt, ours);
 							if (!evt.IsCanceled)
 							{
 								_registrations.Remove(key);
 								_revision++;
-								NotifyRegistrationEvent(new RegistrationEventArgs<K, H>(ours, RegistrationEventKind.Canceled), ours);
+								NotifyRegistrationEvent(new RegistrationEventArgs<TKey, THandback>(ours, RegistrationEventKind.Canceled), ours);
 								return true;
 							}
 						}
@@ -217,18 +217,18 @@ namespace FlitBit.Registrar
 		/// <summary>
 		/// Event fired on any registration event.
 		/// </summary>
-		public event EventHandler<RegistrationEventArgs<K, H>> OnAny;
+		public event EventHandler<RegistrationEventArgs<TKey, THandback>> OnAny;
 		/// <summary>
 		/// Event fired when new registrations occur.
 		/// </summary>
-		public event EventHandler<RegistrationEventArgs<K, H>> OnNewRegistration;
+		public event EventHandler<RegistrationEventArgs<TKey, THandback>> OnNewRegistration;
 
 		/// <summary>
 		/// Allows subclasses to safely walk the registrations without
 		/// blocking concurrent registrar operations.
 		/// </summary>
 		/// <param name="visitor">an action called for each regisration</param>
-		protected void VisitEach(Action<IRegistrationKey<K, H>> visitor)
+		protected void VisitEach(Action<IRegistrationKey<TKey, THandback>> visitor)
 		{
 			var snapshot = GetRegistrationSnapshot();
 			foreach (var reg in snapshot)
@@ -237,7 +237,7 @@ namespace FlitBit.Registrar
 			}
 		}
 
-		private void NotifyRegistrationEvent(RegistrationEventArgs<K, H> evt, RegistrationKey context)
+		private void NotifyRegistrationEvent(RegistrationEventArgs<TKey, THandback> evt, RegistrationKey context)
 		{
 			Contract.Requires<ArgumentNullException>(evt != null);
 
@@ -257,17 +257,20 @@ namespace FlitBit.Registrar
 		}
 			
 		int _snapshotRevision = 0;
-		IRegistrationKey<K, H>[] _snapshot = new IRegistrationKey<K, H>[0];
-		private IEnumerable<IRegistrationKey<K, H>> GetRegistrationSnapshot()
+		IRegistrationKey<TKey, THandback>[] _snapshot = new IRegistrationKey<TKey, THandback>[0];
+		private IEnumerable<IRegistrationKey<TKey, THandback>> GetRegistrationSnapshot()
 		{
-			Contract.Requires((this._snapshotRevision == this._revision || this._registrations != null));	
+		  if (this._registrations == null)
+		  {
+		    return Enumerable.Empty<IRegistrationKey<TKey, THandback>>();
+		  }
 
-			IRegistrationKey<K, H>[] result;
+		  IRegistrationKey<TKey, THandback>[] result;
 			lock (_sync)
 			{
 				if (_snapshotRevision != _revision)
 				{
-					_snapshot = _registrations.Values.Cast<IRegistrationKey<K, H>>().ToArray();
+					_snapshot = _registrations.Values.Cast<IRegistrationKey<TKey, THandback>>().ToArray();
 					_snapshotRevision = _revision;
 				}
 				result = _snapshot;
