@@ -18,7 +18,7 @@ namespace FlitBit.Registrar
 	{
 	  readonly Object _sync = new Object();
 	  readonly Dictionary<TKey, IRegistrationKey> _registrations = new Dictionary<TKey, IRegistrationKey>();
-		int _revision = 0;
+		int _revision;
 
 		[Serializable]
 		class RegistrationKey : IRegistrationKey<TKey, THandback>
@@ -260,7 +260,7 @@ namespace FlitBit.Registrar
 			}
 		}
 			
-		int _snapshotRevision = 0;
+		int _snapshotRevision;
 		IRegistrationKey<TKey, THandback>[] _snapshot = new IRegistrationKey<TKey, THandback>[0];
 		private IEnumerable<IRegistrationKey<TKey, THandback>> GetRegistrationSnapshot()
 		{

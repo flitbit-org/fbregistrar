@@ -15,16 +15,16 @@ namespace FlitBit.Registrar
 		/// <summary>
 		/// Adds a registration for the key and handback given.
 		/// </summary>
-		/// <typeparam name="K">key type K</typeparam>
-		/// <typeparam name="H">handback type H</typeparam>
+		/// <typeparam name="TKey">key type K</typeparam>
+		/// <typeparam name="THandback">handback type H</typeparam>
 		/// <param name="registrar">the registrar</param>
 		/// <param name="key">the key</param>
 		/// <param name="handback">the handback</param>
-		public static void Register<K, H>(this IRegistrar<K, H> registrar, K key, H handback)
+		public static void Register<TKey, THandback>(this IRegistrar<TKey, THandback> registrar, TKey key, THandback handback)
 		{
 			Contract.Requires<ArgumentNullException>(registrar != null);
 
-			IRegistrationKey<K, H> reg;
+			IRegistrationKey<TKey, THandback> reg;
 			if (!registrar.TryRegister(key, handback, out reg))
 				throw new RegistrationException(String.Concat("Already registered: ", Convert.ToString(key)));
 		}
@@ -32,15 +32,15 @@ namespace FlitBit.Registrar
 		/// <summary>
 		/// Unregisters the current registration associated with the key given.
 		/// </summary>
-		/// <typeparam name="K">key type K</typeparam>
-		/// <typeparam name="H">handback type H</typeparam>
+		/// <typeparam name="TKey">key type K</typeparam>
+		/// <typeparam name="THandback">handback type H</typeparam>
 		/// <param name="registrar">the registrar</param>
 		/// <param name="key">the key</param>
-		public static void Unregister<K, H>(this IRegistrar<K, H> registrar, K key)
+		public static void Unregister<TKey, THandback>(this IRegistrar<TKey, THandback> registrar, TKey key)
 		{
 			Contract.Requires<ArgumentNullException>(registrar != null);
 
-			IRegistrationKey<K, H> reg;
+			IRegistrationKey<TKey, THandback> reg;
 			if (registrar.TryGetRegistration(key, out reg))
 			{
 				if (!registrar.CancelRegistration(reg))

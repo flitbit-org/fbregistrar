@@ -17,7 +17,6 @@ namespace FlitBit.Registrar
 		/// Default constructor; creates a new instance.
 		/// </summary>
 		public RegistrationException()
-			: base()
 		{
 		}
 

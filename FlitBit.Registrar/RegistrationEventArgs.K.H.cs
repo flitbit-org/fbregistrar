@@ -11,14 +11,14 @@ namespace FlitBit.Registrar
 	/// EventArgs for registration events.
 	/// </summary>
 	[Serializable]
-	public class RegistrationEventArgs<K, H> : RegistrationEventArgs
+	public class RegistrationEventArgs<TKey, THandback> : RegistrationEventArgs
 	{
 		/// <summary>
 		/// Creates a new instance.
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="kind"></param>
-		public RegistrationEventArgs(IRegistrationKey<K, H> key, RegistrationEventKind kind)
+		public RegistrationEventArgs(IRegistrationKey<TKey, THandback> key, RegistrationEventKind kind)
 			: base(key, kind)
 		{
 			Contract.Requires<ArgumentNullException>(key != null);
@@ -27,11 +27,11 @@ namespace FlitBit.Registrar
 		/// <summary>
 		/// Gets the strongly typed registration key.
 		/// </summary>
-		public IRegistrationKey<K, H> Key
+		public IRegistrationKey<TKey, THandback> Key
 		{
 			get
 			{
-				return (IRegistrationKey<K, H>)UntypedKey;
+				return (IRegistrationKey<TKey, THandback>)UntypedKey;
 			}
 		}
 	}
